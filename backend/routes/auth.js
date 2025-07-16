@@ -12,13 +12,22 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    // Manual validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (password.length < 6) {
+      console.error('Register Error: Password too short');
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
     const user = await User.create({ name, email, password });
-
     const token = generateToken(user._id);
 
     res.status(201).json({
@@ -30,9 +39,14 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
+    console.error('Register Error:', error.message);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(400).json({ message: 'Error creating user' });
   }
 });
+
 
 router.post('/login', async (req, res) => {
   try {
