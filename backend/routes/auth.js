@@ -8,12 +8,13 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
+// REGISTER
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Manual validation
     if (!name || !email || !password) {
+      console.error('Register Error: Missing fields');
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -24,6 +25,7 @@ router.post('/register', async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
+      console.error('Register Error: User already exists');
       return res.status(400).json({ message: 'User already exists' });
     }
 
@@ -47,12 +49,13 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
+// LOGIN
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.error('Login Error: Missing email or password');
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
@@ -86,6 +89,5 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Login failed' });
   }
 });
-
 
 module.exports = router;
