@@ -52,19 +52,27 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.error('Login Error: Email not found');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const isMatch = await user.matchPassword(password);
+
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.error('Login Error: Wrong password');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const token = generateToken(user._id);
 
-    res.json({
+    res.status(200).json({
       user: {
         id: user._id,
         name: user.name,
@@ -72,9 +80,12 @@ router.post('/login', async (req, res) => {
       },
       token
     });
+
   } catch (error) {
-    res.status(400).json({ message: 'Error logging in' });
+    console.error('Login Error:', error.message);
+    res.status(500).json({ message: 'Login failed' });
   }
 });
+
 
 module.exports = router;
